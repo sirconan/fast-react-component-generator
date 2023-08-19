@@ -1,28 +1,34 @@
-export const templateComponent = `import React from 'react';
+export const templateComponent = `import type { VoidFunctionComponent } from 'react';
 
 {{{styleImport}}}
 
-type Props = {
-  example?: string
+type {{componentName}}Props = {
+  firstProp?: string
 };
 
-export const {{componentName}}: React.FC<Props> = () => {
-  return (
-    <div className={{{className}}}>
-      {{componentName}}
-    </div>
-  );
+export const {{componentName}}: VoidFunctionComponent<{{componentName}}Props> = ({firstProp}) => {
+  {{{pandaHook}}}
+  return <div{{{className}}}>{firstProp}</div>;
 };
 `;
 
-export const templateIndex = `export { {{componentName}} } from './{{componentName}}';`;
+export const templateIndex = `export * from './{{kebabName}}';`;
 
-export const templateStylesheet = `.wrap {
-  display: block;
-}`;
+export const templateScss = `@import '~@posos-tech/design-system-legacy/assets/styles/base';
 
-export const templateStory = `
-import type { Meta, StoryObj } from "@storybook/react";
+.root {
+  display: flex;
+}
+`;
+
+export const templatePanda = `import { sva } from '@posos-tech/styled-system/css';
+
+export const useStyles = sva({
+  
+});
+`;
+
+export const templateStory = `import type { Meta, StoryObj } from "@storybook/react";
 import { {{componentName}} } from ".";
 
 const meta: Meta<typeof {{componentName}}> = {
@@ -42,5 +48,41 @@ export const Default: Story = {
     // Props
   },
 };
+`;
 
+export const templateHook = `type Use{{componentName}} = {
+  firstReturnValue: string;
+};
+
+export const use{{componentName}} = (): Use{{componentName}} => {
+  const firstReturnValue = 'hello';
+
+  return {
+    firstReturnValue,
+  };
+};
+`;
+
+export const templateType = `export type {{componentName}} = {
+  first: string;
+};
+`;
+
+export const templateConstant = `export const {{componentName}} = 'value';
+`;
+
+export const templateTest = `import { render, screen } from '@shared/tests/test-utils';
+
+// SUT
+import { {{componentName}} } from '../{{kebabName}}';
+
+describe('{{componentName}} Componant', () => {
+  it('should return ...', () => {
+    render(<{{componentName}} />);
+
+    expect(
+      screen.getByRole('button')
+    ).toBeInTheDocument();
+  });
+});
 `;

@@ -24,7 +24,7 @@
     "commands": [
       {
         "command": "fast-react-component-generator",
-        "title": "New React component"
+        "title": "New React file"
       }
     ],
     "menus": {
