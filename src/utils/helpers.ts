@@ -1,3 +1,6 @@
+import * as fs from "fs";
+import * as vscode from "vscode";
+
 // Basic validation of component name
 export const validateComponentName = (componentName: string | null) => {
   if (!componentName || componentName === "") {
@@ -68,8 +71,43 @@ export const generateStyleImport = ({
 
 export const kebabToPascal = (inputString: string) => {
   return inputString.replace(/-([a-z])/g, (_, match) => match.toUpperCase()).replace(/^(.)/, (_, match) => match.toUpperCase());
-}
+};
 
 export const hasCommonValue = (arr1: string[], arr2: string[]) => {
   return arr1.some(item => arr2.includes(item));
-}
+};
+
+export const confirmOverride = async(path: string) => {
+  const overrideIt = await vscode.window.showWarningMessage(`${path} already exist, do you want override it ?`, { modal: true }, { title: 'Yes' });
+  return overrideIt?.title === 'Yes';
+};
+
+export const createFile = async(path: string, content: string) => {
+  const exist = fs.existsSync(path);
+
+  if (exist) {
+    const allowOverride = await confirmOverride(path);
+    if (!allowOverride) {
+      return;
+    }
+  }
+
+  fs.writeFileSync(
+    path,
+    content,
+  );
+};
+
+export const createFolder = async(path: string) => {
+  const exist = fs.existsSync( path );
+  if (exist) {
+    const allowOverride = await confirmOverride(path);
+    if (!allowOverride) {
+      throw new Error("Creation abort");
+    }
+
+    fs.rmSync(path, { recursive: true, force: true });
+  }
+
+  fs.mkdirSync(path);
+};

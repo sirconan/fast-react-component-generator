@@ -5,16 +5,25 @@ One-click generator to create new React components based on best practices.
 It will create:
 
 - A new folder
+- - __tests__/{name}.tsx
 - - {name}.tsx
-- - {name}.css (or .module.css | .module.scss)
-- - {name}.stories.tsx (optional)
+- - use-{name}.ts
+- - constants.tsx
+- - type.tsx
+- - styles.scss
 - - index.ts
+
+`name` must be a kebab-case string
 
 ## Demo
 
 ![Demo](assets/demo.gif)
 
 ## Release Notes
+
+### 1.2.0
+
+Rework generated files type for personal use and manage override files/folders
 
 ### 1.1.0
 

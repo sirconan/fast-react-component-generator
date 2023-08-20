@@ -24,6 +24,8 @@ import {
   hasCommonValue,
   generatePandaHook,
   testFolderName,
+  createFile,
+  createFolder,
 } from "./utils/helpers";
 
 // Run on activation (when vscode loads)
@@ -33,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
-const createStructure = (fsPath: string, kebabName?: string, selectedItems?: string[]) => {
+const createStructure = async(fsPath: string, kebabName?: string, selectedItems?: string[]) => {
   if (typeof kebabName === "string") {
     const createRoot = !!selectedItems?.includes(pickOptions.root);
 
@@ -58,15 +60,10 @@ const createStructure = (fsPath: string, kebabName?: string, selectedItems?: str
     try {
       // Create a new folder
       if (createRoot) {
-        const folderExist = fs.existsSync( componentFolder );
-        if (folderExist) {
-          throw new Error(`${kebabName} folder already exist`);
-        }
-
-        fs.mkdirSync(componentFolder);
+        await createFolder(componentFolder);
 
         // Add main file
-        fs.writeFileSync(
+        await createFile(
           path.join(componentFolder, `${kebabName}.tsx`),
           mustache.render(templateComponent, {
             componentName,
@@ -80,7 +77,7 @@ const createStructure = (fsPath: string, kebabName?: string, selectedItems?: str
         );
 
         // Add index file
-        fs.writeFileSync(
+        await createFile(
           path.join(componentFolder, "index.ts"),
           mustache.render(templateIndex, { kebabName })
         );
@@ -89,13 +86,8 @@ const createStructure = (fsPath: string, kebabName?: string, selectedItems?: str
       if (hasTests) {
         const testsFolder = path.join(componentFolder, testFolderName);
 
-        const folderExist = fs.existsSync( testsFolder );
-        if (folderExist) {
-          throw new Error(`${testFolderName} folder already exist in ${kebabName}`);
-        }
-
-        fs.mkdirSync(testsFolder);
-        fs.writeFileSync(
+        await createFolder(testsFolder);
+        await createFile(
           path.join(testsFolder, `${kebabName}.test.tsx`),
           mustache.render(templateTest, { componentName, kebabName })
         );
@@ -103,15 +95,15 @@ const createStructure = (fsPath: string, kebabName?: string, selectedItems?: str
 
       if (hasTypes) {
         // Add type file
-        fs.writeFileSync(
-          path.join(componentFolder, "types.ts"),
+        await createFile(
+          path.join(componentFolder, "types.ts"), 
           mustache.render(templateType, { componentName })
         );
       }
 
       if (hasContants) {
         // Add constant file
-        fs.writeFileSync(
+        await createFile(
           path.join(componentFolder, "contants.ts"),
           mustache.render(templateConstant, { componentName: componentName.toUpperCase() })
         );
@@ -119,7 +111,7 @@ const createStructure = (fsPath: string, kebabName?: string, selectedItems?: str
 
       if (hasHook) {
         // Add hook file
-        fs.writeFileSync(
+        await createFile(
           path.join(componentFolder, `use-${kebabName}.ts`),
           mustache.render(templateHook, { componentName })
         );
@@ -127,7 +119,7 @@ const createStructure = (fsPath: string, kebabName?: string, selectedItems?: str
 
       if (isScssModules || isPanda) {
         // Add stylesheet
-        fs.writeFileSync(
+        await createFile(
           path.join(
             componentFolder,
             `styles.${generateStyleExtension({
@@ -141,7 +133,7 @@ const createStructure = (fsPath: string, kebabName?: string, selectedItems?: str
 
       // Add storybook
       if (hasStorybook) {
-        fs.writeFileSync(
+        await createFile(
           path.join(componentFolder, `${kebabName}.stories.tsx`),
           mustache.render(templateStory, { componentName })
         );
@@ -149,15 +141,17 @@ const createStructure = (fsPath: string, kebabName?: string, selectedItems?: str
 
       // Open main file in editor
       // Add a 0.5-second delay to make sure files are created
-      setTimeout(() => {
-        vscode.workspace
-          .openTextDocument(
-            path.join(componentFolder, `${kebabName}.tsx`)
-          )
-          .then((document) => {
-            vscode.window.showTextDocument(document);
-          });
-      }, 500);
+      if (createRoot) {
+        setTimeout(() => {
+          vscode.workspace
+            .openTextDocument(
+              path.join(componentFolder, `${kebabName}.tsx`)
+            )
+            .then((document) => {
+              vscode.window.showTextDocument(document);
+            });
+        }, 500);
+      }
     } catch (error) {
       vscode.window.showErrorMessage(
         `Could not create the component. ${error}`
